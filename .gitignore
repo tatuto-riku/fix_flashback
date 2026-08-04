@@ -1,0 +1,31 @@
+# Jar files & Libraries (重いバイナリファイルを除外)
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+libs/
+
+# Test environment (Minecraftの起動ログやワールドデータ)
+run/
+
+# Build output
+build/
+out/
+
+# Gradle
+.gradle/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config
+gradle.properties.local

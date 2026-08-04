@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "com.tatuto.fixflashback.mixin",
+  "plugin": "com.tatuto.fixflashback.mixin.FixFlashbackMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "fix_flashback.refmap.json",
+  "priority": 1100,
+  "mixins": [
+    "MixinFabricNetworkAddon",
+    "MixinFlashbackFakePlayer",
+    "MixinModernFixStrongholdCache",
+    "MixinNeoForgePlayerLoggedIn",
+    "MixinReplayReader",
+    "MixinConnectionKeepAlive"
+  ],
+  "client": [
+    "MixinIntegratedServer"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -1,0 +1,67 @@
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+authors = "${mod_authors}"
+description = '''
+${mod_description}
+
+Flashback is a Fabric mod. When it is run on NeoForge through Sinytra Connector it crashes on world
+load with:
+
+    java.lang.NoClassDefFoundError: net/fabricmc/fabric/impl/networking/UntrackedNetworkHandler
+        at net.minecraft.client.server.IntegratedServer.<init>(IntegratedServer.java:65)
+
+Flashback's fake replay player implements that internal Fabric API marker interface, but Forgified
+Fabric API never shipped it, so the class cannot be linked and every world load fails.
+
+The interface is an empty marker, so this mod removes it from Flashback's class during loading
+rather than supplying it (a second module exporting that package would break JPMS). It also
+restores the skip behaviour the marker was meant to control.
+'''
+
+[[mixins]]
+config = "fix_flashback.mixins.json"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version}]"
+ordering = "NONE"
+side = "BOTH"
+
+# Flashback is the mod being patched. Optional so this mod stays inert without it. We must load
+# BEFORE it so our mixin config is registered by the time its classes are transformed.
+[[dependencies.${mod_id}]]
+modId = "flashback"
+type = "optional"
+versionRange = "*"
+ordering = "BEFORE"
+side = "BOTH"
+
+# The missing class belongs to Fabric API's networking module, so we must load after its
+# Forgified reimplementation.
+[[dependencies.${mod_id}]]
+modId = "fabric_api"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "connector"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
