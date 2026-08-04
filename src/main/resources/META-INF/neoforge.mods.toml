@@ -7,22 +7,9 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
-description = '''
-${mod_description}
-
-Flashback is a Fabric mod. When it is run on NeoForge through Sinytra Connector it crashes on world
-load with:
-
-    java.lang.NoClassDefFoundError: net/fabricmc/fabric/impl/networking/UntrackedNetworkHandler
-        at net.minecraft.client.server.IntegratedServer.<init>(IntegratedServer.java:65)
-
-Flashback's fake replay player implements that internal Fabric API marker interface, but Forgified
-Fabric API never shipped it, so the class cannot be linked and every world load fails.
-
-The interface is an empty marker, so this mod removes it from Flashback's class during loading
-rather than supplying it (a second module exporting that package would break JPMS). It also
-restores the skip behaviour the marker was meant to control.
-'''
+description = "${mod_description}"
+logoFile = "icon.png"
+logoBlur = false
 
 [[mixins]]
 config = "fix_flashback.mixins.json"
