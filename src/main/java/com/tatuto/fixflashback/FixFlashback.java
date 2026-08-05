@@ -81,6 +81,91 @@ public class FixFlashback {
     public FixFlashback() {
         LOGGER.info("Fix Flashback loaded (Flashback present: {}, patch applied: {})",
                 isFlashbackLoaded(), patched);
+        logFlashbackMixinConflicts();
+    }
+
+    /**
+     * Scans every mixin config on the classpath and reports which OTHER mods target the same classes
+     * Flashback rewrites for its replay features (camera/spectator, night-vision, time override,
+     * client level). This makes mod conflicts visible in the log without external tooling.
+     */
+    private static void logFlashbackMixinConflicts() {
+        if (!isFlashbackLoaded()) {
+            return;
+        }
+        // Classes Flashback's replay features depend on.
+        String[] flashbackTargets = {
+                "GameRenderer", "LightTexture", "ClientLevelData", "Camera",
+                "Minecraft", "LevelRenderer", "Gui", "Options", "MouseHandler"
+        };
+        try {
+            ClassLoader cl = FixFlashback.class.getClassLoader();
+            java.util.Enumeration<java.net.URL> resources = cl.getResources("");
+            java.util.Set<String> scanned = new java.util.HashSet<>();
+            java.util.Map<String, java.util.Set<String>> hits = new java.util.LinkedHashMap<>();
+            for (java.net.URL url : java.util.Collections.list(
+                    cl.getResources("META-INF"))) {
+                // Walk the jar / dir for *.mixins.json
+                scanMixins(url, flashbackTargets, hits, scanned);
+            }
+            if (!hits.isEmpty()) {
+                LOGGER.info("[Fix Flashback] Potential replay-feature mixin conflicts:");
+                for (java.util.Map.Entry<String, java.util.Set<String>> e : hits.entrySet()) {
+                    LOGGER.info("  {} targeted by: {}", e.getKey(), e.getValue());
+                }
+            } else {
+                LOGGER.info("[Fix Flashback] No obvious replay-feature mixin conflicts found.");
+            }
+        } catch (Throwable t) {
+            LOGGER.debug("[Fix Flashback] Conflict scan failed", t);
+        }
+    }
+
+    private static void scanMixins(java.net.URL metaUrl, String[] targets,
+                                   java.util.Map<String, java.util.Set<String>> hits,
+                                   java.util.Set<String> scanned) {
+        try {
+            java.nio.file.Path base;
+            String str = metaUrl.toString();
+            if (str.startsWith("jar:")) {
+                String jarPath = str.substring("jar:".length(), str.lastIndexOf("!/"));
+                base = java.nio.file.Paths.get(java.net.URI.create(jarPath));
+                try (java.util.stream.Stream<java.nio.file.Path> walk =
+                             java.nio.file.Files.walk(base)) {
+                    walk.filter(p -> p.getFileName().toString().endsWith(".mixins.json"))
+                            .forEach(p -> readMixinJson(p, targets, hits, scanned));
+                }
+            } else if (str.startsWith("file:")) {
+                base = java.nio.file.Paths.get(java.net.URI.create(str));
+                try (java.util.stream.Stream<java.nio.file.Path> walk =
+                             java.nio.file.Files.walk(base)) {
+                    walk.filter(p -> p.getFileName().toString().endsWith(".mixins.json"))
+                            .forEach(p -> readMixinJson(p, targets, hits, scanned));
+                }
+            }
+        } catch (Throwable ignored) {
+            // Best-effort only.
+        }
+    }
+
+    private static void readMixinJson(java.nio.file.Path jsonPath, String[] targets,
+                                      java.util.Map<String, java.util.Set<String>> hits,
+                                      java.util.Set<String> scanned) {
+        try {
+            String abs = jsonPath.toAbsolutePath().toString();
+            if (!scanned.add(abs)) {
+                return;
+            }
+            String text = java.nio.file.Files.readString(jsonPath);
+            String jarName = jsonPath.getRoot() != null ? jsonPath.getRoot().toString() : abs;
+            for (String t : targets) {
+                if (text.contains(t)) {
+                    hits.computeIfAbsent(t, k -> new java.util.LinkedHashSet<>()).add(jarName);
+                }
+            }
+        } catch (Throwable ignored) {
+            // Best-effort only.
+        }
     }
 
     /** Called by the mixin plugin once it has stripped the unresolvable interface. */
@@ -125,4 +210,83 @@ public class FixFlashback {
             return false;
         }
     }
+
+    /**
+     * Whether a Flashback replay is currently being played back.
+     *
+     * <p>Used to disable client-side interpolation tweaks (e.g. from Smooth Movement) that turn
+     * Flashback's per-tick position updates into long, slow linear slides between recorded
+     * positions.</p>
+     */
+    public static boolean isReplayPlaying() {
+        if (!isFlashbackLoaded()) {
+            return false;
+        }
+        try {
+            Class<?> flashbackClass = Class.forName("com.moulberry.flashback.Flashback",
+                    false, FixFlashback.class.getClassLoader());
+            Object replayServer = flashbackClass.getMethod("getReplayServer").invoke(null);
+            return replayServer != null;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static boolean smoothMovementDisabled = false;
+
+    /**
+     * Smooth Movement eases entity position packets over many frames via large lerpSteps. During a
+     * Flashback replay (which already sends a position every tick) this produces the "entities slide
+     * in straight lines between recorded positions" issue. We disable its smoothing config flag while
+     * a replay is playing so Flashback's own interpolation is restored.
+     */
+    public static void disableSmoothMovementIfReplaying() {
+        if (smoothMovementDisabled || !isReplayPlaying()) {
+            return;
+        }
+        try {
+            Class<?> configClass = Class.forName("com.smoothmovement.config.CommonConfiguration",
+                    false, FixFlashback.class.getClassLoader());
+            java.lang.reflect.Field configField = configClass.getDeclaredField("config");
+            configField.setAccessible(true);
+            Object cupboardConfig = configField.get(null);
+            if (cupboardConfig == null) {
+                return;
+            }
+            // CupboardConfig<T> has getCommonConfig() returning the config instance.
+            Object configInstance = cupboardConfig.getClass()
+                    .getMethod("getCommonConfig").invoke(cupboardConfig);
+            if (configInstance == null) {
+                return;
+            }
+            java.lang.reflect.Field flagField =
+                    configInstance.getClass().getField("enableLivingEntitySmoothing");
+            flagField.setBoolean(configInstance, false);
+            smoothMovementDisabled = true;
+            LOGGER.info("[Fix Flashback] Smooth Movement entity smoothing disabled during replay");
+        } catch (Throwable t) {
+            LOGGER.info("[Fix Flashback] Could not disable Smooth Movement: {}", t.getMessage());
+        }
+    }
+
+    /**
+     * Forces an entity's client-side interpolation step count back to the vanilla default (3) right
+     * after a teleport packet is applied. Smooth Movement raises this value, causing the slow linear
+     * slide between recorded positions. Reflection is used because the field name cannot be remapped
+     * without a refMap under NeoForge.
+     */
+    public static void clampEntityLerpSteps(net.minecraft.world.entity.Entity entity) {
+        if (!isReplayPlaying() || entity == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Field f = entity.getClass().getField("lerpSteps");
+            if (f.getInt(entity) != 3) {
+                f.setInt(entity, 3);
+            }
+        } catch (Throwable ignored) {
+            // Field not accessible / not present; ignore.
+        }
+    }
+
 }
