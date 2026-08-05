@@ -38,7 +38,7 @@ These only affect Flashback's replay features; the rest of the mods work normall
 
 ## Other fixes
 
-- **Entity stuck-sliding (定点移動) during replays** — When Smooth Movement is installed, recorded entities slide linearly between positions instead of snapping to the replayed location. Fix Flashback clamps the client-side interpolation step count back to the vanilla default after each teleport packet and disables Smooth Movement's entity smoothing while a replay is playing, so entities stay put at their recorded positions.
+- **Entity stuck-sliding during replays** — When Smooth Movement is installed, recorded entities slide linearly between positions instead of snapping to the replayed location. Fix Flashback clamps the client-side interpolation step count back to the vanilla default after each teleport packet and disables Smooth Movement's entity smoothing while a replay is playing, so entities stay put at their recorded positions.
 
 ## How it works
 
