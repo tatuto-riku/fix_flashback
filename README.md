@@ -30,9 +30,9 @@ The following mods interfere with Flashback's replay features. If you install th
 
 | Mod | Feature broken |
 | --- | --- |
-| **BadOptimizations** (`BadOptimizations-2.4.1-1.21.1.jar`) | Night vision (暗視) is no longer applied during replays |
-| **railways** (`railways-0.2.1+neoforge-mc1.21.1.jar`) | Spectator camera (視点観戦) stops working |
-| **smoothmovement** (`smoothmovement-1.21.1-2.7.jar`) | Time override (時間上書き) stops working |
+| **BadOptimizations** (`BadOptimizations-2.4.1-1.21.1.jar`) | Night vision is no longer applied during replays |
+| **railways** (`railways-0.2.1+neoforge-mc1.21.1.jar`) | Spectator camera stops working |
+| **smoothmovement** (`smoothmovement-1.21.1-2.7.jar`) | Time override stops working |
 
 These only affect Flashback's replay features; the rest of the mods work normally.
 
