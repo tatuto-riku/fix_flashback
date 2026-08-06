@@ -24,22 +24,6 @@ Flashback records and replays gameplay, but when it is loaded on NeoForge via Co
 - It is safe to install even when Flashback is absent — every fix is applied through `@Pseudo` mixins and does nothing unless the relevant mod is present.
 - No known conflicting mods. It only hooks Flashback / ModernFix / NeoForge internals to restore expected behaviour.
 
-## Known incompatible mods
-
-The following mods interfere with Flashback's replay features. If you install them, the corresponding feature stops working. Remove or disable them to use that feature:
-
-| Mod | Feature broken |
-| --- | --- |
-| **BadOptimizations** (`BadOptimizations-2.4.1-1.21.1.jar`) | Night vision is no longer applied during replays |
-| **railways** (`railways-0.2.1+neoforge-mc1.21.1.jar`) | Spectator camera stops working |
-| **smoothmovement** (`smoothmovement-1.21.1-2.7.jar`) | Time override stops working |
-
-These only affect Flashback's replay features; the rest of the mods work normally.
-
-## Other fixes
-
-- **Entity stuck-sliding during replays** — When Smooth Movement is installed, recorded entities slide linearly between positions instead of snapping to the replayed location. Fix Flashback clamps the client-side interpolation step count back to the vanilla default after each teleport packet and disables Smooth Movement's entity smoothing while a replay is playing, so entities stay put at their recorded positions.
-
 ## How it works
 
 Flashback's fake replay player relies on an internal Fabric marker interface and on Fabric's networking / stronghold-cache behaviour, none of which Forgified Fabric API reproduces exactly. Fix Flashback patches the gaps:
@@ -51,4 +35,6 @@ Flashback's fake replay player relies on an internal Fabric marker interface and
 
 ## License
 
-[MIT](LICENSE) © tatuto-riku
+MIT © tatuto-riku
+
+> Since this mod is currently under development, it may not work correctly.
