@@ -51,6 +51,6 @@ Flashback's fake replay player relies on an internal Fabric marker interface and
 
 ## License
 
-MIT © tatuto-riku
+[MIT](LICENSE) © tatuto-riku
 
 > Since this mod is currently under development, it may not work correctly.
