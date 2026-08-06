@@ -4,6 +4,8 @@ A small NeoForge compatibility patch that lets the Fabric mod **Flashback** run 
 
 Flashback records and replays gameplay, but when it is loaded on NeoForge via Connector it crashes in several places that only exist on the Forgified Fabric API / ModernFix / NeoForge stack. This mod fixes those crashes so recordings can be opened and played back normally.
 
+> **[Create: Flashback](https://github.com/tatuto-riku/create_flashback)** and **[Create: Aeronautics Flashback](https://github.com/tatuto-riku/create_aeronautics_flashback)** make the Flashback mod compatible with **Create** and **Create: Aeronautics**.
+
 ## Installation
 
 - Install NeoForge `1.21.1` and Sinytra Connector.
@@ -30,9 +32,9 @@ The following mods interfere with Flashback's replay features. If you install th
 
 | Mod | Feature broken |
 | --- | --- |
-| **BadOptimizations** (`BadOptimizations-2.4.1-1.21.1.jar`) | Night vision is no longer applied during replays |
-| **Create: Steam 'n' Rails** (`railways-0.2.1+neoforge-mc1.21.1.jar`) | Spectator camera stops working |
-| **Smooth Movement** (`smoothmovement-1.21.1-2.7.jar`) | Time override stops working |
+| **BadOptimizations** | Night vision is no longer applied during replays |
+| **Create: Steam 'n' Rails** | Spectator camera stops working |
+| **Smooth Movement** | Time override stops working |
 
 These only affect Flashback's replay features; the rest of the mods work normally.
 
