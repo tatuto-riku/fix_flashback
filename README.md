@@ -50,6 +50,7 @@ Flashback's fake replay player relies on an internal Fabric marker interface and
 - **Crash opening a recording** — ModernFix's `cache_strongholds` optimization downcasts a `null` chunk generator for Flashback's replay server and throws a `NullPointerException`. The stronghold cache setup is skipped for the replay server, which is safe (it is only a performance optimization).
 - **"Disconnected" when entering a replay** — NeoForge throws while firing `PlayerLoggedInEvent` for a `BannerPattern` that is not in the replay registry. The exception is swallowed so the viewer player is placed correctly.
 - **Connection lost while playing back** — Recorded `custom_payload` packets can fail to read/encode on this modpack. Corrupted replay actions are skipped and encoder exceptions no longer close the connection, so playback continues.
+- **Server-side replay crash** — While playing back a recording made on a server, some mods (e.g. EasyNPC) throw `ArrayIndexOutOfBoundsException` / `IllegalStateException` while decoding or applying recorded game packets. Flashback only catches `DecoderException`, so those escaped and crashed the replay server. The error is now swallowed (the broken packet is skipped) so the replay server stays alive.
 
 ## License
 
