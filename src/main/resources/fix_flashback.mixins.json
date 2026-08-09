@@ -14,7 +14,8 @@
     "MixinReplayReader",
     "MixinConnectionKeepAlive",
     "MixinTeleportPacketDebug",
-    "MixinSmoothMovementServerTime"
+    "MixinSmoothMovementServerTime",
+    "MixinReplayGamePacket"
   ],
   "client": [
     "MixinIntegratedServer"
